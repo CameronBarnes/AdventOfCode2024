@@ -7,7 +7,7 @@ edition = "2021"
 itertools = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
-ahash = { workspace = true }
+rustc-hash = "2.1"
 
 [dev-dependencies]
 criterion = { workspace = true }

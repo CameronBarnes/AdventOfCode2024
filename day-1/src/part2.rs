@@ -1,19 +1,22 @@
-use ahash::{HashMap, HashMapExt};
+use rustc_hash::{FxBuildHasher, FxHashMap};
+
+use crate::parse_num;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let (left, right): (Vec<usize>, Vec<usize>) = input
-        .lines()
-        .map(|line| {
-            let mut iter = line.split_whitespace();
-            (
-                iter.next().unwrap().parse::<usize>().unwrap(),
-                iter.next().unwrap().parse::<usize>().unwrap(),
-            )
-        })
-        .unzip();
-    let mut map: HashMap<usize, usize> = HashMap::new();
-    let mut freq: HashMap<usize, usize> = HashMap::new();
+    let mut left = Vec::with_capacity(1000);
+    let mut right = Vec::with_capacity(1000);
+    for (left_num, right_num) in input.lines().map(|line| {
+        let (left, right) = line.split_once("   ").unwrap();
+        (parse_num(left), parse_num(right))
+    }) {
+        left.push(left_num);
+        right.push(right_num);
+    }
+
+    let mut map: FxHashMap<usize, usize> = FxHashMap::with_capacity_and_hasher(1000, FxBuildHasher);
+    let mut freq: FxHashMap<usize, usize> =
+        FxHashMap::with_capacity_and_hasher(1000, FxBuildHasher);
     left.iter().for_each(|num| {
         map.insert(*num, 0);
         freq.entry(*num).and_modify(|freq| *freq += 1).or_insert(1);

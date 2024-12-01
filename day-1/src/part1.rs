@@ -1,18 +1,19 @@
+use crate::parse_num;
+
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let (mut left, mut right): (Vec<usize>, Vec<usize>) = input
-        .lines()
-        .map(|line| {
-            let mut iter = line.split_whitespace();
-            (
-                iter.next().unwrap().parse::<usize>().unwrap(),
-                iter.next().unwrap().parse::<usize>().unwrap(),
-            )
-        })
-        .unzip();
+    let mut left = Vec::with_capacity(1000);
+    let mut right = Vec::with_capacity(1000);
+    for (left_num, right_num) in input.lines().map(|line| {
+        let (left, right) = line.split_once("   ").unwrap();
+        (parse_num(left), parse_num(right))
+    }) {
+        left.push(left_num);
+        right.push(right_num);
+    }
 
-    left.sort();
-    right.sort();
+    left.sort_unstable();
+    right.sort_unstable();
 
     left.iter()
         .zip(right.iter())

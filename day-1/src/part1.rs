@@ -1,7 +1,9 @@
+use tinyvec::array_vec;
+
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let mut left = Vec::with_capacity(1000);
-    let mut right = Vec::with_capacity(1000);
+    let mut left = array_vec!([u32; 1024]);
+    let mut right = array_vec!([u32; 1024]);
     let mut input = input.as_bytes();
     // While let matching based on code from @danielrab on discord
     while let [a0, a1, a2, a3, a4, _, _, _, b0, b1, b2, b3, b4, _, remaining_input @ ..] = input {

@@ -8,6 +8,7 @@ itertools = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 rustc-hash = "2.1"
+tinyvec = "1.8"
 
 [dev-dependencies]
 criterion = { workspace = true }

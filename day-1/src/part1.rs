@@ -1,15 +1,25 @@
-use crate::parse_num;
-
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
     let mut left = Vec::with_capacity(1000);
     let mut right = Vec::with_capacity(1000);
-    for (left_num, right_num) in input.lines().map(|line| {
-        let (left, right) = line.split_once("   ").unwrap();
-        (parse_num(left), parse_num(right))
-    }) {
-        left.push(left_num);
-        right.push(right_num);
+    let mut input = input.as_bytes();
+    // While let matching based on code from @danielrab on discord
+    while let [a0, a1, a2, a3, a4, _, _, _, b0, b1, b2, b3, b4, _, remaining_input @ ..] = input {
+        input = remaining_input;
+        left.push(
+            (*a0 - b'0') as u32 * 10_000
+                + (*a1 - b'0') as u32 * 1000
+                + (*a2 - b'0') as u32 * 100
+                + (*a3 - b'0') as u32 * 10
+                + (*a4 - b'0') as u32,
+        );
+        right.push(
+            (*b0 - b'0') as u32 * 10_000
+                + (*b1 - b'0') as u32 * 1000
+                + (*b2 - b'0') as u32 * 100
+                + (*b3 - b'0') as u32 * 10
+                + (*b4 - b'0') as u32,
+        );
     }
 
     left.sort_unstable();
@@ -18,7 +28,7 @@ pub fn process(input: &str) -> String {
     left.iter()
         .zip(right.iter())
         .map(|(left, right)| left.max(right) - left.min(right))
-        .sum::<usize>()
+        .sum::<u32>()
         .to_string()
 }
 
@@ -28,12 +38,7 @@ mod tests {
 
     #[test]
     fn test_process() {
-        let input = "3   4
-4   3
-2   5
-1   3
-3   9
-3   3";
-        assert_eq!("11", process(input));
+        let input = include_str!("../input.txt");
+        assert_eq!("1765812", process(input));
     }
 }

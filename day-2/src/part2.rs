@@ -1,25 +1,29 @@
 use itertools::Itertools;
+use tinyvec::array_vec;
 
-use crate::is_safe;
+use crate::{is_safe, parse_num};
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let reports = input
+    let reports= input
         .lines()
         .map(|line| {
-            line.split_whitespace()
-                .map(|num| num.parse::<u32>().unwrap())
-                .collect_vec()
+            let mut arr = array_vec!([u8; 8]);
+            line.split_ascii_whitespace().map(parse_num).collect_into(&mut arr);
+            arr
         })
         .collect_vec();
     reports
         .iter()
         .filter(|report| {
-            if !is_safe(report) {
+            if !is_safe(report.iter()) {
                 (0..report.len()).any(|index| {
-                    let mut changed = (*report).clone();
-                    changed.remove(index);
-                    is_safe(&changed)
+                    is_safe(
+                        report
+                            .iter()
+                            .take(index)
+                            .chain(report.iter().skip(index + 1)),
+                    )
                 })
             } else {
                 true
@@ -42,5 +46,11 @@ mod tests {
 8 6 4 4 1
 1 3 6 7 9";
         assert_eq!("4", process(input));
+    }
+
+    #[test]
+    fn test_real_input() {
+        let input = include_str!("../input.txt");
+        assert_eq!("476", process(input));
     }
 }

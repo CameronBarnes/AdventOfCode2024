@@ -8,6 +8,7 @@ itertools = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 ahash = { workspace = true }
+tinyvec = "1.8"
 
 [dev-dependencies]
 criterion = { workspace = true }

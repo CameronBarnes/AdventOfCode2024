@@ -1,21 +1,24 @@
-use itertools::Itertools;
 use tinyvec::array_vec;
 
-use crate::{is_safe, parse_num};
+use crate::is_safe;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let reports= input
+    input
         .lines()
         .map(|line| {
-            let mut arr = array_vec!([u8; 8]);
-            line.split_ascii_whitespace().map(parse_num).collect_into(&mut arr);
-            arr
-        })
-        .collect_vec();
-    reports
-        .iter()
-        .filter(|report| {
+            let mut report = array_vec!([u8; 8]);
+            let mut num = 0;
+            for c in line.as_bytes() {
+                match *c {
+                    b' ' => {
+                        report.push(num);
+                        num = 0
+                    }
+                    _ => num = num * 10 + *c - b'0',
+                }
+            }
+            report.push(num);
             if !is_safe(report.iter()) {
                 (0..report.len()).any(|index| {
                     is_safe(

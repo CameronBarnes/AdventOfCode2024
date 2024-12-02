@@ -1,5 +1,7 @@
 use itertools::Itertools;
 
+use crate::is_safe;
+
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
     let reports = input
@@ -12,14 +14,7 @@ pub fn process(input: &str) -> String {
         .collect_vec();
     reports
         .iter()
-        .filter(|report| {
-            (report.windows(2).all(|nums| nums[0] > nums[1])
-                || report.windows(2).all(|nums| nums[0] < nums[1]))
-                && report.windows(2).all(|nums| {
-                    let diff = nums[0].abs_diff(nums[1]);
-                    (1..=3).contains(&diff)
-                })
-        })
+        .filter(|report| is_safe(report))
         .count()
         .to_string()
 }

@@ -1,18 +1,8 @@
-use std::sync::LazyLock;
-
-use regex::Regex;
-
-static RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(mul)\((\d+),(\d+)\)").unwrap());
+use crate::parse_str;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    RE.captures_iter(input)
-        .map(|capture| capture.extract())
-        .map(|(_, [_action, num1, num2])| {
-            num1.parse::<u32>().unwrap() * num2.parse::<u32>().unwrap()
-        })
-        .sum::<u32>()
-        .to_string()
+    parse_str(input).to_string()
 }
 
 #[cfg(test)]

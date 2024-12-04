@@ -6,22 +6,35 @@ pub fn process(input: &str) -> String {
     let width = grid[0].len();
     grid.windows(3)
         .map(|window| {
-            (0..width)
-                .filter(|col_index| {
-                    let first = window[0].iter().skip(*col_index).take(3).collect_vec();
-                    let second = window[1].iter().skip(*col_index).take(3).collect_vec();
-                    let third = window[2].iter().skip(*col_index).take(3).collect_vec();
-                    if first.len() == 3 && second.len() == 3 && third.len() == 3 {
-                        matches!(
-                            (first[0], second[1], third[2]),
-                            (b'M', b'A', b'S') | (b'S', b'A', b'M')
-                        ) && matches!(
-                            (first[2], second[1], third[0]),
-                            (b'M', b'A', b'S') | (b'S', b'A', b'M')
-                        )
-                    } else {
-                        false
-                    }
+            (0..(width - 2))
+                // We do unsafe here to improve the unwrap performance, we know becase of the
+                // checked and consistent width that this should never fail
+                .filter(|col_index| unsafe {
+                    let first: (&u8, &u8, &u8) = window[0]
+                        .iter()
+                        .skip(*col_index)
+                        .take(3)
+                        .collect_tuple()
+                        .unwrap_unchecked();
+                    let second: (&u8, &u8, &u8) = window[1]
+                        .iter()
+                        .skip(*col_index)
+                        .take(3)
+                        .collect_tuple()
+                        .unwrap_unchecked();
+                    let third: (&u8, &u8, &u8) = window[2]
+                        .iter()
+                        .skip(*col_index)
+                        .take(3)
+                        .collect_tuple()
+                        .unwrap_unchecked();
+                    matches!(
+                        (first.0, second.1, third.2),
+                        (b'M', b'A', b'S') | (b'S', b'A', b'M')
+                    ) && matches!(
+                        (first.2, second.1, third.0),
+                        (b'M', b'A', b'S') | (b'S', b'A', b'M')
+                    )
                 })
                 .count()
         })

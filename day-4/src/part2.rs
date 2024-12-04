@@ -2,7 +2,9 @@ use itertools::Itertools;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let grid = input.lines().map(|line| line.as_bytes()).collect_vec();
+    let grid = unsafe { input.as_bytes().as_chunks_unchecked::<141>() };
+    // let grid = input.lines().map(|line| line.as_bytes()).collect_vec();
+    // The above is much slower, but works with variable length test input
     let width = grid[0].len();
     grid.windows(3)
         .map(|window| {
@@ -49,12 +51,14 @@ mod tests {
     use super::*;
 
     #[rstest]
+    #[ignore] // Swap out the parsing to use lines and collect vec to use this test
     #[case(
         "M.S
 .A.
 M.S",
         "1"
     )]
+    #[ignore] // Swap out the parsing to use lines and collect vec to use this test
     #[case(
         ".M.S......
 ..A..MSMS.
@@ -70,5 +74,11 @@ M.M.M.M.M.
     )]
     fn test_process(#[case] input: &str, #[case] expected: &str) {
         assert_eq!(expected, process(input));
+    }
+
+    #[test]
+    fn test_input() {
+        let input = include_str!("../input.txt");
+        assert_eq!("2029", process(input));
     }
 }

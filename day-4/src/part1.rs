@@ -2,8 +2,8 @@ use itertools::Itertools;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-     let grid = unsafe { input.as_bytes().as_chunks_unchecked::<141>() }; // For use with real
-    // input only
+    // For use with real input only
+    let grid = unsafe { input.as_bytes().as_chunks_unchecked::<141>() };
     //let grid = input.lines().map(|line| line.as_bytes()).collect_vec(); // For use with test input
     let width = grid[0].len();
     let diagonal = grid
@@ -52,6 +52,17 @@ pub fn process(input: &str) -> String {
                         // Right-left diagonal
                         matches += 1;
                     }
+                    if matches!(
+                        (first.0, second.0, third.0, forth.0),
+                        (b'X', b'M', b'A', b'S') | (b'S', b'A', b'M', b'X')
+                    ) {
+                        // Left edge vertical
+                        matches += 1;
+                    }
+                    if matches!(first, (b'X', b'M', b'A', b'S') | (b'S', b'A', b'M', b'X')) {
+                        // Top edge horizontal
+                        matches += 1;
+                    }
                     matches
                 })
                 .sum::<usize>()
@@ -59,6 +70,7 @@ pub fn process(input: &str) -> String {
         .sum::<usize>();
     let horizontal = grid
         .iter()
+        .skip(grid.len() - 3)
         .map(|line| {
             line.windows(4)
                 .filter(|window| {
@@ -74,8 +86,7 @@ pub fn process(input: &str) -> String {
                 .count()
         })
         .sum::<usize>();
-    let width = grid[0].len();
-    let vertical = (0..width)
+    let vertical = ((width - 3)..width)
         .map(|x_pos| {
             let col = grid
                 .iter()

@@ -7,16 +7,10 @@ fn validate(pages: &[u16], key: &HashMap<u16, Vec<u16>>) -> bool {
         set.insert(*page);
         if let Some(list) = key.get(page) {
             for required in list {
-                if pages.contains(required) {
-                    if !set.contains(required) {
-                        println!("Invalid: {pages:?}");
-                        println!("Missing {required} before {page}\n");
-                        return false;
-                    } else {
-                        println!("{required} present before {page}");
-                    }
-                } else {
-                    println!("{required} not present");
+                if pages.contains(required) && !set.contains(required) {
+                    // println!("Invalid: {pages:?}");
+                    // println!("Missing {required} before {page}\n");
+                    return false;
                 }
             }
         }
@@ -47,7 +41,7 @@ pub fn process(input: &str) -> String {
                 .collect_vec();
             if validate(&nums, &map) {
                 let middle = nums[nums.len() / 2];
-                println!("Valid: {nums:?} Middle: {middle}\n");
+                // println!("Valid: {nums:?} Middle: {middle}\n");
                 sum += middle;
             }
         }

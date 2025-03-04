@@ -1,3 +1,5 @@
+use crate::checksum;
+
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
     let mut storage: Vec<i32> = Vec::new();
@@ -27,17 +29,6 @@ pub fn process(input: &str) -> String {
     checksum(&storage).to_string()
 }
 
-#[allow(dead_code)]
-fn dbg_storage(storage: &[i32]) -> String {
-    storage
-        .iter()
-        .map(|num| match num {
-            -1 => ".".to_string(),
-            num => num.to_string(),
-        })
-        .collect()
-}
-
 fn degrag(storage: &mut [i32]) {
     let mut left_index = 0;
     let mut right_index = storage.len() - 1;
@@ -55,20 +46,6 @@ fn degrag(storage: &mut [i32]) {
             left_index += 1;
         }
     }
-}
-
-fn checksum(storage: &[i32]) -> usize {
-    storage
-        .iter()
-        .enumerate()
-        .map(|(index, value)| {
-            if *value < 0 {
-                0
-            } else {
-                index * (*value as usize)
-            }
-        })
-        .sum()
 }
 
 #[cfg(test)]

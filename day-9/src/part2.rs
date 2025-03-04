@@ -46,7 +46,7 @@ fn degrag(storage: &mut Vec<(i32, usize)>) {
     for file_id in file_ids {
         if let Some((index, (file_id, size))) =
             storage.iter().enumerate().find_map(|(index, (id, size))| {
-                if *id == file_id {
+                if *id == file_id && index > start_index_by_needed_size[*size] {
                     Some((index, (*id, *size)))
                 } else {
                     None

@@ -1,20 +1,25 @@
+[profile.flamegraph]
+debug = 2
+inherits = "release"
+
 [workspace]
+members = [
+    "day-*",
+    "day-9",
+]
 resolver = "2"
 
-members = ["day-*"]
-
 [workspace.dependencies]
-regex = "1.10"
+ahash = "0.8"
+glam = "0.29"
 itertools = "0.13"
 rayon = "1.8"
-glam = "0.29"
-tracing = "0.1.40"
-tracing-subscriber = "0.3.18"
+regex = "1.10"
 rstest = "0.23.0"
 rstest_reuse = "0.7.0"
-criterion = { version = "0.5", features = ["html_reports"] }
-ahash = "0.8"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
 
-[profile.flamegraph]
-inherits = "release"
-debug = true
+[workspace.dependencies.criterion]
+version = "0.5"
+features = ["html_reports"]

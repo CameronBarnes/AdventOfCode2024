@@ -36,6 +36,7 @@ pub fn process(input: &str) -> String {
 }
 
 fn degrag(storage: &mut Vec<(i32, usize)>) {
+    let mut empty_end_indexes = 0;
     let mut start_index_by_needed_size: [usize; 10] = [0; 10];
     let file_ids = storage
         .iter()
@@ -44,8 +45,12 @@ fn degrag(storage: &mut Vec<(i32, usize)>) {
         .map(|(id, _size)| *id)
         .collect_vec();
     for file_id in file_ids {
-        if let Some((index, (file_id, size))) =
-            storage.iter().enumerate().find_map(|(index, (id, size))| {
+        if let Some((index, (file_id, size))) = storage
+            .iter()
+            .enumerate()
+            .rev()
+            .skip(empty_end_indexes)
+            .find_map(|(index, (id, size))| {
                 if *id == file_id && index > start_index_by_needed_size[*size] {
                     Some((index, (*id, *size)))
                 } else {
@@ -68,12 +73,14 @@ fn degrag(storage: &mut Vec<(i32, usize)>) {
                     // println!("Swapping {index} and {empty_index}");
                     start_index_by_needed_size[size] = start.max(empty_index);
                     storage.swap(index, empty_index);
+                    empty_end_indexes = storage.len() - index;
                 } else {
                     // println!("Moving from {index} to {empty_index} with {diff} left over");
                     start_index_by_needed_size[size] = start.max(empty_index);
                     storage.get_mut(index).unwrap().0 = -1;
                     *storage.get_mut(empty_index).unwrap() = (file_id, size);
                     storage.insert(empty_index + 1, (-1, diff));
+                    empty_end_indexes = storage.len() - (index + 1);
                 }
             }
             // println!("{}", super::dbg_storage(&convert(storage)));

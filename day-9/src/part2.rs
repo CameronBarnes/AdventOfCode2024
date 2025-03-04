@@ -4,16 +4,15 @@ use crate::checksum;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let mut storage: Vec<(i32, usize)> = Vec::new();
+    let mut storage: Vec<(i32, usize)> = Vec::with_capacity(input.len());
     let mut empty = false;
     let mut index = 0;
     input
-        .chars()
-        .filter(|c| !c.is_whitespace())
-        .map(|c| {
-            c.to_digit(10)
-                .unwrap_or_else(|| panic!("Failed with char {c}")) as usize
-        })
+        .lines()
+        .next()
+        .unwrap()
+        .bytes()
+        .map(|c| (c - b'0') as usize)
         .for_each(|num| {
             if empty {
                 if num != 0 {
@@ -30,20 +29,14 @@ pub fn process(input: &str) -> String {
         });
 
     // println!("{}", super::dbg_storage(&convert(&storage)));
-    // The bellow code was a silly attempt to maximize compression
-    // let mut moved = 1;
-    // while moved > 0 {
-    //     moved = degrag(&mut storage);
-    //     println!("Moved: {moved}");
-    // }
     degrag(&mut storage);
     // println!("{}", super::dbg_storage(&convert(&storage)));
 
     checksum(&convert(&storage)).to_string()
 }
 
-fn degrag(storage: &mut Vec<(i32, usize)>) -> usize {
-    let mut moves = 0;
+fn degrag(storage: &mut Vec<(i32, usize)>) {
+    let mut start_index_by_needed_size: [usize; 10] = [0; 10];
     let file_ids = storage
         .iter()
         .rev()
@@ -60,9 +53,11 @@ fn degrag(storage: &mut Vec<(i32, usize)>) -> usize {
                 }
             })
         {
+            let start = start_index_by_needed_size[size];
             if let Some((empty_index, empty)) = storage
                 .iter()
                 .enumerate()
+                .skip(start)
                 .filter(|(empty_index, (file_id, _size))| *empty_index < index && *file_id < 0)
                 .find(|(_, (_id, empty_size))| *empty_size >= size)
             {
@@ -71,21 +66,21 @@ fn degrag(storage: &mut Vec<(i32, usize)>) -> usize {
                 let diff = empty.1 - size;
                 if diff == 0 {
                     // println!("Swapping {index} and {empty_index}");
+                    start_index_by_needed_size[size] = start.max(empty_index);
                     storage.swap(index, empty_index);
                 } else {
                     // println!("Moving from {index} to {empty_index} with {diff} left over");
+                    start_index_by_needed_size[size] = start.max(empty_index);
                     storage.get_mut(index).unwrap().0 = -1;
                     *storage.get_mut(empty_index).unwrap() = (file_id, size);
                     storage.insert(empty_index + 1, (-1, diff));
                 }
-                moves += 1;
             }
             // println!("{}", super::dbg_storage(&convert(storage)));
         } else {
             break;
         }
     }
-    moves
 }
 
 fn convert(storage: &[(i32, usize)]) -> Vec<i32> {

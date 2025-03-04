@@ -2,13 +2,15 @@ use crate::checksum;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let mut storage: Vec<i32> = Vec::new();
+    let mut storage: Vec<i32> = Vec::with_capacity(input.len() * 2);
     let mut empty = false;
     let mut index = 0;
     input
-        .chars()
-        .filter(|c| !c.is_whitespace())
-        .map(|c| c.to_digit(10).unwrap_or_else(|| panic!("Failed with char {c}")) as usize)
+        .lines()
+        .next()
+        .unwrap()
+        .bytes()
+        .map(|c| (c - b'0') as usize)
         .for_each(|num| {
             if empty {
                 if num != 0 {

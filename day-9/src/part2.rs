@@ -4,7 +4,7 @@ use crate::checksum;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let mut storage: Vec<(u16, u16)> = Vec::with_capacity(input.len());
+    let mut storage: Vec<(u16, u8)> = Vec::with_capacity(input.len());
     let mut empty = false;
     let mut index = 0;
     input
@@ -12,7 +12,7 @@ pub fn process(input: &str) -> String {
         .next()
         .unwrap()
         .bytes()
-        .map(|c| (c - b'0') as u16)
+        .map(|c| (c - b'0'))
         .for_each(|num| {
             if empty {
                 if num != 0 {
@@ -35,7 +35,7 @@ pub fn process(input: &str) -> String {
     checksum(&convert(&storage)).to_string()
 }
 
-fn degrag(storage: &mut Vec<(u16, u16)>) {
+fn degrag(storage: &mut Vec<(u16, u8)>) {
     let mut empty_end_indexes = 0;
     let mut start_index_by_needed_size: [usize; 10] = [0; 10];
     let file_ids = storage
@@ -51,7 +51,7 @@ fn degrag(storage: &mut Vec<(u16, u16)>) {
             .rev()
             .skip(empty_end_indexes)
             .find_map(|(index, (id, size))| {
-                if *id == file_id {
+                if *id == file_id && index > start_index_by_needed_size[*size as usize] {
                     Some((index, (*id, *size)))
                 } else {
                     None
@@ -68,8 +68,6 @@ fn degrag(storage: &mut Vec<(u16, u16)>) {
                 })
                 .find(|(_, (_id, empty_size))| *empty_size >= size)
             {
-                // println!("Empty slot, index: {empty_index} value: {empty:?}");
-                // println!("Full slot, index: {index} value: {file_id}, {size}");
                 let diff = empty.1 - size;
                 if diff == 0 {
                     // println!("Swapping {index} and {empty_index}");
@@ -86,13 +84,11 @@ fn degrag(storage: &mut Vec<(u16, u16)>) {
                 }
             }
             // println!("{}", super::dbg_storage(&convert(storage)));
-        } else {
-            break;
         }
     }
 }
 
-fn convert(storage: &[(u16, u16)]) -> Vec<u16> {
+fn convert(storage: &[(u16, u8)]) -> Vec<u16> {
     storage
         .iter()
         .flat_map(|(index, size)| vec![*index; *size as usize])

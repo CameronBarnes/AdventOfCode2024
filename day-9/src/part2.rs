@@ -71,12 +71,16 @@ fn degrag(storage: &mut Vec<(u16, u8)>) {
                 let diff = empty.1 - size;
                 if diff == 0 {
                     // println!("Swapping {index} and {empty_index}");
-                    start_index_by_needed_size[size as usize] = start.max(empty_index);
+                    ((size as usize)..10).for_each(|i| {
+                        start_index_by_needed_size[i] = start_index_by_needed_size[i].max(empty_index);
+                    });
                     storage.swap(index, empty_index);
                     empty_end_indexes = storage.len() - index;
                 } else {
                     // println!("Moving from {index} to {empty_index} with {diff} left over");
-                    start_index_by_needed_size[size as usize] = start.max(empty_index);
+                    ((size as usize)..10).for_each(|i| {
+                        start_index_by_needed_size[i] = start_index_by_needed_size[i].max(empty_index);
+                    });
                     storage.get_mut(index).unwrap().0 = u16::MAX;
                     *storage.get_mut(empty_index).unwrap() = (file_id, size);
                     storage.insert(empty_index + 1, (u16::MAX, diff));

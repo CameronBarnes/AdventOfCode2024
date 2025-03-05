@@ -4,7 +4,7 @@ use crate::checksum;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let mut storage: Vec<(i32, usize)> = Vec::with_capacity(input.len());
+    let mut storage: Vec<(u16, u16)> = Vec::with_capacity(input.len());
     let mut empty = false;
     let mut index = 0;
     input
@@ -12,11 +12,11 @@ pub fn process(input: &str) -> String {
         .next()
         .unwrap()
         .bytes()
-        .map(|c| (c - b'0') as usize)
+        .map(|c| (c - b'0') as u16)
         .for_each(|num| {
             if empty {
                 if num != 0 {
-                    storage.push((-1, num));
+                    storage.push((u16::MAX, num));
                 }
                 empty = false;
             } else {
@@ -35,13 +35,13 @@ pub fn process(input: &str) -> String {
     checksum(&convert(&storage)).to_string()
 }
 
-fn degrag(storage: &mut Vec<(i32, usize)>) {
+fn degrag(storage: &mut Vec<(u16, u16)>) {
     let mut empty_end_indexes = 0;
     let mut start_index_by_needed_size: [usize; 10] = [0; 10];
     let file_ids = storage
         .iter()
         .rev()
-        .filter(|(id, _size)| *id >= 0)
+        .filter(|(id, _size)| *id != u16::MAX)
         .map(|(id, _size)| *id)
         .collect_vec();
     for file_id in file_ids {
@@ -58,12 +58,14 @@ fn degrag(storage: &mut Vec<(i32, usize)>) {
                 }
             })
         {
-            let start = start_index_by_needed_size[size];
+            let start = start_index_by_needed_size[size as usize];
             if let Some((empty_index, empty)) = storage
                 .iter()
                 .enumerate()
                 .skip(start)
-                .filter(|(empty_index, (file_id, _size))| *empty_index < index && *file_id < 0)
+                .filter(|(empty_index, (file_id, _size))| {
+                    *empty_index < index && *file_id == u16::MAX
+                })
                 .find(|(_, (_id, empty_size))| *empty_size >= size)
             {
                 // println!("Empty slot, index: {empty_index} value: {empty:?}");
@@ -71,15 +73,15 @@ fn degrag(storage: &mut Vec<(i32, usize)>) {
                 let diff = empty.1 - size;
                 if diff == 0 {
                     // println!("Swapping {index} and {empty_index}");
-                    start_index_by_needed_size[size] = start.max(empty_index);
+                    start_index_by_needed_size[size as usize] = start.max(empty_index);
                     storage.swap(index, empty_index);
                     empty_end_indexes = storage.len() - index;
                 } else {
                     // println!("Moving from {index} to {empty_index} with {diff} left over");
-                    start_index_by_needed_size[size] = start.max(empty_index);
-                    storage.get_mut(index).unwrap().0 = -1;
+                    start_index_by_needed_size[size as usize] = start.max(empty_index);
+                    storage.get_mut(index).unwrap().0 = u16::MAX;
                     *storage.get_mut(empty_index).unwrap() = (file_id, size);
-                    storage.insert(empty_index + 1, (-1, diff));
+                    storage.insert(empty_index + 1, (u16::MAX, diff));
                     empty_end_indexes = storage.len() - (index + 1);
                 }
             }
@@ -90,10 +92,10 @@ fn degrag(storage: &mut Vec<(i32, usize)>) {
     }
 }
 
-fn convert(storage: &[(i32, usize)]) -> Vec<i32> {
+fn convert(storage: &[(u16, u16)]) -> Vec<u16> {
     storage
         .iter()
-        .flat_map(|(index, size)| vec![*index; *size])
+        .flat_map(|(index, size)| vec![*index; *size as usize])
         .collect()
 }
 

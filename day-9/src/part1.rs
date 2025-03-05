@@ -2,7 +2,7 @@ use crate::checksum;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
-    let mut storage: Vec<i32> = Vec::with_capacity(input.len() * 2);
+    let mut storage: Vec<u16> = Vec::with_capacity(input.len() * 2);
     let mut empty = false;
     let mut index = 0;
     input
@@ -14,7 +14,7 @@ pub fn process(input: &str) -> String {
         .for_each(|num| {
             if empty {
                 if num != 0 {
-                    storage.append(&mut vec![-1; num]);
+                    storage.append(&mut vec![u16::MAX; num]);
                 }
                 empty = false;
             } else {
@@ -31,13 +31,13 @@ pub fn process(input: &str) -> String {
     checksum(&storage).to_string()
 }
 
-fn degrag(storage: &mut [i32]) {
+fn degrag(storage: &mut [u16]) {
     let mut left_index = 0;
     let mut right_index = storage.len() - 1;
     while left_index < right_index {
-        if storage[left_index] == -1 {
+        if storage[left_index] == u16::MAX {
             while right_index > left_index {
-                if storage[right_index] != -1 {
+                if storage[right_index] != u16::MAX {
                     storage.swap(left_index, right_index);
                     break;
                 } else {

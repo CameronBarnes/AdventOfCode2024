@@ -51,7 +51,7 @@ fn degrag(storage: &mut Vec<(i32, usize)>) {
             .rev()
             .skip(empty_end_indexes)
             .find_map(|(index, (id, size))| {
-                if *id == file_id && index > start_index_by_needed_size[*size] {
+                if *id == file_id {
                     Some((index, (*id, *size)))
                 } else {
                     None
@@ -103,6 +103,12 @@ mod tests {
 
     #[test]
     fn test_process() {
+        let input = include_str!("../input.txt");
+        assert_eq!("6353648390778", process(input))
+    }
+
+    #[test]
+    fn test_1() {
         let input = "2333133121414131402";
         assert_eq!("2858", process(input));
     }

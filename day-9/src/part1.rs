@@ -56,6 +56,12 @@ mod tests {
 
     #[test]
     fn test_process() {
+        let input = include_str!("../input.txt");
+        assert_eq!("6332189866718", process(input))
+    }
+
+    #[test]
+    fn test_1() {
         let input = "2333133121414131402";
         assert_eq!("1928", process(input));
     }

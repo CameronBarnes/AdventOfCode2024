@@ -4,3 +4,4 @@ Cargo.lock
 day-*.bench.txt
 perf.*
 */input.txt
+flamegraphs/*

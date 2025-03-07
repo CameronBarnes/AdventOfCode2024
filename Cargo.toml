@@ -5,13 +5,14 @@ inherits = "release"
 [workspace]
 members = [
     "day-*",
+    "day-10",
     "day-9",
 ]
 resolver = "2"
 
 [workspace.dependencies]
 ahash = "0.8"
-glam = "0.30"
+cached = "0.55"
 itertools = "0.14"
 rayon = "1.8"
 regex = "1.10"
@@ -23,3 +24,7 @@ tracing-subscriber = "0.3.18"
 [workspace.dependencies.criterion]
 version = "0.5"
 features = ["html_reports"]
+
+[workspace.dependencies.glam]
+version = "0.30"
+features = ["debug-glam-assert"]

@@ -1,4 +1,4 @@
-use std::collections::LinkedList;
+use cached::proc_macro::cached;
 
 #[tracing::instrument]
 pub fn process(input: &str) -> String {
@@ -6,32 +6,30 @@ pub fn process(input: &str) -> String {
 }
 
 fn private_process(input: &str, iterations: usize) -> String {
-    let mut stones: LinkedList<u64> = input
+    input
         .split_whitespace()
         .map(|num| num.parse::<u64>().unwrap())
-        .collect();
-    for _ in 0..iterations {
-        let mut cursor = stones.cursor_front_mut();
-        while let Some(current) = cursor.current().cloned() {
-            if current == 0 {
-                *cursor.current().unwrap() = 1;
-                cursor.move_next();
-            } else if (current.ilog10() + 1) & 1 == 0 {
-                let split_at = current.ilog10().div_ceil(2);
-                let str = current.to_string();
-                let (first, second) = str.split_at(split_at as usize);
-                *cursor.current().unwrap() = first.parse().unwrap();
-                cursor.insert_after(second.parse().unwrap());
-                cursor.move_next();
-                cursor.move_next();
-            } else {
-                *cursor.current().unwrap() *= 2024;
-                cursor.move_next();
-            }
-        }
-    }
+        .map(|stone| count_stones(stone, iterations))
+        .sum::<usize>()
+        .to_string()
+}
 
-    stones.len().to_string()
+#[cached]
+fn count_stones(stone: u64, blinks: usize) -> usize {
+    if blinks == 0 {
+        return 1;
+    }
+    if stone == 0 {
+        count_stones(1, blinks - 1)
+    } else if (stone.ilog10() + 1) & 1 == 0 {
+        let split_at = stone.ilog10().div_ceil(2);
+        let str = stone.to_string();
+        let (first, second) = str.split_at(split_at as usize);
+        count_stones(first.parse().unwrap(), blinks - 1)
+            + count_stones(second.parse().unwrap(), blinks - 1)
+    } else {
+        count_stones(stone * 2024, blinks - 1)
+    }
 }
 
 #[cfg(test)]
@@ -44,6 +42,7 @@ mod tests {
     #[case("0 1 10 99 999", "7", 1)]
     #[case("125 17", "22", 6)]
     #[case("125 17", "55312", 25)]
+    #[case(include_str!("../input.txt"), "203953", 25)]
     fn test_1(#[case] input: &str, #[case] expected_result: &str, #[case] iterations: usize) {
         assert_eq!(expected_result, private_process(input, iterations));
     }

@@ -16,7 +16,6 @@ pub fn process(input: &str) -> String {
     grid.iter()
         .enumerate()
         .map(|(y, line)| {
-            println!("{line:?}");
             line.iter()
                 .enumerate()
                 .filter(|(_x, val)| **val == 0)
